@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Performance Tester</title>
+<script src="MathJax-Profiler.js"></script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'],['\\(','\\)']]},
+  "HTML-CSS": {availableFonts: [], preferredFont: null}
+});
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body>
+
+<h1>An example from Struik's <em>Lectures on Classical Differential Geometry</em></i></h1>
+
+<!------------------------------------------------------------------------>
+<hr>
+
+<div ID="p23">
+p. 23
+</div>
+<p>
+
+<blockquote>
+
+<p>
+This procedure is simply a generalization of the method used in Sects.
+1-3 and 1-4 to obtain the equations of the osculating plane and the
+osculating circle.  Let $f(u)$ near $P(u=u_0)$ have finite derivatives
+$f^{(i)}(u_0)$, $i = 1, 2, \ldots, n+1$.  Then if we take $u=u_1$ at $A$
+and write $h = u_1 - u_0$, then there exists a Taylor development of $f(u)$
+of the form (compare Eq.  (1-5)):
+$$
+f(u_1) = f(u_0) + hf'(u_0)+{h^2\over 2!}f''(u_0) + \cdots
+ + {h^{n+1}\over (n+1)!}f^{(n+1)}(u_0) + o(h^{n+1}).
+$$
+
+Here, $f(u_0)=0$ since $P$ lies on $\Sigma_2$, and $h$ is of order $AP$
+(see theorem Sec.  1-2); $f(u_1)$ is of order $AD$.  <I>Hence necessary and
+sufficient conditions that the surface has a contact of order $n$ at $P$
+with the curve are that at $P$ the relations hold:</I>
+
+$$
+f(u) = f'(u) = f''(u) = \cdots = f^{(n)}(u) = 0;\quad f^{(n+1)}(u) \ne 0.
+$$
+
+</p>
+
+</blockquote>
+
+$\unicode{x2A0D}$
+$\require{bad_extension}$
+
+</p>
+
+<script src="performance.js"></script>
+
+</body>
+</html>
