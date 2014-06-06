@@ -151,6 +151,7 @@ var MathJax = {
         //
         event.T = TYPES.math;
         event.s = lastEvent; event.e = event.t;
+        event.i = message[1].replace(/MathJax-Element-/,"");
         delete event.t;
         if (lastTop !== PROFILER.events.length) {
           PROFILER.events.splice(lastTop,0,event);
@@ -177,6 +178,14 @@ var MathJax = {
           EVENT.HUB[name].e = event.t;
           delete EVENT.HUB[name]; event = null;
         }
+
+      } else if (name == "TeX Jax - parse error" || name === "Unprocessed TeX") {
+        //
+        //  A TeX parsing error or macros unprocessed
+        //
+        event.n = name.replace(/Jax - /,"");
+        event.m = message[1];
+        event.i = MathJax.ElementJax.mml.SUPER.ID+1; // the expected ID for the math
 
       } else if (name.match(/- unknown char$/)) {
         //
@@ -216,35 +225,50 @@ var MathJax = {
         {file = file.substr(HUB.config.root.length+1)}
       return file;
     }
+    
+    var REPLACED = [];  // functions to put back when done
+    //
+    //  Replace a method with a new one
+    //
+    var REPLACE = function (obj,method,fn) {
+      var FN = obj[method];
+      REPLACED.push([obj,method,FN]);
+      obj[method] = fn;
+      return FN;
+    };
+    //
+    //  Put back the replaced functions
+    //
+    var CLEANUP = function () {
+      for (var i = 0, m = REPLACED.length; i < m; i++)
+        {var hook = REPLACED[i]; hook[0][hook[1]] = hook[2]}
+    }
 
     //
     //  Hook into the AJAX loader to record file events.
     //
-    var JS = AJAX.loader.JS;
-    AJAX.loader.JS = function (file,callback) {
+    var JS = REPLACE(AJAX.loader,"JS",function (file,callback) {
       var FILE = SHORTFILE(file);
       var event = {n:FILE, T:TYPES.file, s: TIME(), c:0};
       EVENT.FILES[FILE] = event; PROFILER.events.push(event);
       return JS.apply(this,arguments);
-    }
+    });
     //
     //  Hook into loadComplete to finish file events
     //
-    var COMPLETE = AJAX.loadComplete;
-    AJAX.loadComplete = function (file) {
+    var COMPLETE = REPLACE(AJAX,"loadComplete",function (file) {
       var event = EVENT.FILES[SHORTFILE(file)]||{};
       event.c = TIME();
       event.S = this.loading[this.fileURL(file)].status || this.STATUS.OK;
       if (event.S !== this.STATUS.OK)
         {PROFILER[event.t === TYPES.font ? "fontErrors" : "fileErrors"]++}
       return COMPLETE.apply(this,arguments);
-    }
+    });
     //
     //  Hook into Preloading so combinined configuration
     //  files will have event for the files they contain.
     //
-    var PRELOADING = AJAX.Preloading;
-    AJAX.Preloading = function () {
+    var PRELOADING = REPLACE(AJAX,"Preloading",function () {
       var time = TIME();  // Since all these files are in the same load,
                           //   we don't really know when they each start,
                           //   so fake it by starting them all now.
@@ -254,40 +278,43 @@ var MathJax = {
         EVENT.FILES[name] = event; PROFILER.events.push(event);
       }
       return PRELOADING.apply(this,arguments);
-    }
+    });
     
-    var CLEANUP = function () {}; // used to undo the changes below
     //
     //  Hook into the HTML-CSS font loading code
     //
     HUB.Register.StartupHook("HTML-CSS Jax Startup",function () {
-      var HTMLCSS = MathJax.OutputJax["HTML-CSS"]
-      var FONT = HTMLCSS.Font, LOAD = FONT.loadWebFont, COMPLETE = FONT.loadComplete;
+      var HTMLCSS = MathJax.OutputJax["HTML-CSS"];
+      var FONT = HTMLCSS.Font;
       //
       //  Record a web font being loaded
       //
-      FONT.loadWebFont = function (font) {
+      var LOAD = REPLACE(FONT,"loadWebFont",function (font) {
         var name = HTMLCSS.fontInUse.replace(/^TeX$/,"MathJax")+"_"+font.directory.replace(/\//,"-");
         var event = {n:name, T:TYPES.font, s:TIME(), c:0};
         EVENT.FILES[font.directory] = event;
         PROFILER.events.push(event); PROFILER.fonts++;
         return LOAD.apply(this,arguments);
-      }
+      });
       //
       //  Record when the web font is available
       //
-      FONT.loadComplete = function (font,n,done,status) {
+      var COMPLETE = REPLACE(FONT,"loadComplete",function (font,n,done,status) {
         var event = EVENT.FILES[font.directory]||{}; delete EVENT.FILES[font.directory];
         event.c = TIME(); event.S = status;
         return COMPLETE.apply(this,arguments);
-      }
-      //
-      //  Detach the hooks above
-      //
-      CLEANUP = function () {
-        FONT.loadWebFont = LOAD;
-        FONT.loadComplete = COMPLETE;
-      }
+      });
+    });
+    //
+    //  Hook into the TeX internalText to check for TeX commands not processed
+    //
+    HUB.Register.StartupHook("TeX Jax Startup",function () {
+      var MML = MathJax.ElementJax.mml;
+      var PARSE = MathJax.InputJax.TeX.Parse;
+      var INTERNAL = REPLACE(PARSE.prototype,"InternalText",function (text,def) {
+        if (text.match(/[{}\\`^_~]/)) {HUB.signal.Post(["Unprocessed TeX",text])}
+        return INTERNAL.apply(this,arguments);
+      });
     });
     //
     //  When the initial typesetting is complete, remove all the hooks
@@ -296,9 +323,6 @@ var MathJax = {
     //
     HUB.Register.StartupHook("End",function () {
       CLEANUP();
-      AJAX.loader.js = JS;
-      AJAX.loadComplete = COMPLETE;
-      AJAX.Preloading = PRELOADING;
       HUB.Startup.signal.NoInterest(sInterest);
       HUB.signal.NoInterest(hInterest);
       Data_Saver(PROFILER);            //  <=== This is for saving the data

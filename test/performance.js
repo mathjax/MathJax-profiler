@@ -79,18 +79,20 @@ MathJax.Hub.Queue(function () {
     h: function (event) {
       var time = 1, start = event.t, color = "#00D";
       if ("s" in event) {start = event.s; time = event.e - start; color = "#FA4"}
-      var title = time;
+      var title = time, name = event.n;
+      if (event.i) {name += " "+event.i}
       if (event.v) {
         title += " ["+event.v+"]";
         if (event.bf) {title += " bold"}
         if (event.it) {title += " italic"}
       }
-      var node = BOX(color,time,start,{},title,event.n);
+      if (event.m) {title += " "+event.m}
+      var node = BOX(color,time,start,{},title,name);
       if (event.n === "Math Output") {MATH = node; MATHSTART = event.s, MATHn = 0}
     },
     m: function (event) {
       var time = event.e - event.s;
-      BOX("#FFDD44",time,event.s,{},time,event.n);
+      BOX("#FFDD44",time,event.s,{},time,event.n+" "+event.i);
     }
   };
   
