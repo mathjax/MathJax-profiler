@@ -1,7 +1,7 @@
 /*
- *  /MathJax.js
+ *  MathJax-Profiler.js
  *
- *  Copyright (c) 2009-2014 The MathJax Consortium
+ *  Copyright (c) 2014 The MathJax Consortium
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -301,7 +301,7 @@ var MathJax = {
       AJAX.Preloading = PRELOADING;
       HUB.Startup.signal.NoInterest(sInterest);
       HUB.signal.NoInterest(hInterest);
-      SE_Data_Saver(PROFILER);            //  <=== This is for saving the data
+      Data_Saver(PROFILER);            //  <=== This is for saving the data
     });
   }
 }
@@ -313,7 +313,7 @@ MathJax.Profiler.scriptTime = new Date().getTime();
 //  or hook into your own system in another way, be sure
 //  to change the call marked above.
 //  
-function SE_Data_Saver(data) {
+function Data_Saver(data) {
   //
   //  Do whatever you need to do to save the
   //    data object to the server.
@@ -327,5 +327,5 @@ function SE_Data_Saver(data) {
   
   /* Do something with this */
 
-    JSON.stringify(data)
+    JSON.stringify(data);
 }
