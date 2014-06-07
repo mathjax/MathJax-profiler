@@ -69,8 +69,8 @@ var MathJax = {
     //
     //  Hook into the Startup signal
     //
-    var sInterest = HUB.Startup.signal.Interest(function () {
-      var name = arguments[0], file, jax;
+    var sInterest = HUB.Startup.signal.Interest(function (message) {
+      var name = (typeof(message) === "string" ? message : message[0]), file, jax;
       var event = {n:name, T:TYPES.startup, t:TIME()}; // The new event
 
       if (name.substr(0,5) === "Begin") {
@@ -124,7 +124,7 @@ var MathJax = {
         file = EVENT.FILES["extensions/"+file+".js"] || EVENT.FILES["jax/output/"+auto+".js"];
         if (file) {file.ready = TIME(); event = null}
 
-      } else if (name.match(/- Web-Font /)) {
+      } else if (name.match(/- Web[- ]Font /i)) {
         //
         //  A web font message (already handled via loadWebFont below)
         //
@@ -140,7 +140,7 @@ var MathJax = {
     //
     var lastEvent = START, lastTop = 1, saveTop = false;
     var hInterest = HUB.signal.Interest(function (message) {
-      var name = message[0];
+      var name = (typeof(message) === "string" ? message : message[0]);
       var event = {n:message[0], T:TYPES.hub, t:TIME()}; // The new event
 
       if (name === "New Math") {
