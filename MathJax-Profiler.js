@@ -179,12 +179,19 @@ var MathJax = {
           delete EVENT.HUB[name]; event = null;
         }
 
-      } else if (name == "TeX Jax - parse error" || name === "Unprocessed TeX") {
+      } else if (name === "TeX Jax - parse error" || name === "Unprocessed TeX") {
         //
         //  A TeX parsing error or macros unprocessed
         //
         event.n = name.replace(/Jax - /,"");
         event.m = message[1];
+        event.i = MathJax.ElementJax.mml.SUPER.ID+1; // the expected ID for the math
+
+      } else if (name === "TeX Jax - undefined control sequence") {
+        //
+        //  An undefined macro from noUndefined
+        //
+        event.n = name.replace(/TeX Jax - u/,"U") + " " + message[1];
         event.i = MathJax.ElementJax.mml.SUPER.ID+1; // the expected ID for the math
 
       } else if (name.match(/- unknown char$/)) {
