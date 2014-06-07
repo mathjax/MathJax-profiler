@@ -89,6 +89,7 @@ MathJax.Hub.Queue(function () {
       if (event.m) {title += " "+event.m}
       var node = BOX(color,time,start,{},title,name);
       if (event.n === "Math Output") {MATH = node; MATHSTART = event.s, MATHn = 0}
+      if (event.n.match(/unkown|error|unprocessed/i)) {node.parentNode.style.color = "#D00"}
     },
     m: function (event) {
       var time = event.e - event.s;
