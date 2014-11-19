@@ -25,9 +25,9 @@ To add more timings, you simply pick more values from the `events` object.
 ```javascript
 function Data_Saver() {
     for (var b = MathJax.Extension.Profiler, c = b.events, d = 0, e = c.length; e > d; d++) {
-        var f = c[d].n,
-            g = c[d].s,
-            h = c[d].e;
+        var f = c[d].n, //name
+            g = c[d].s, //start time
+            h = c[d].e; //end time
         if ("Startup" === f) {
             var i = h - g;
             _gaq.push(["_trackTiming", "MathJax", f, i, document.URL])
