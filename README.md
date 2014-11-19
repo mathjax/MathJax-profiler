@@ -22,7 +22,7 @@ For a simple example, a `Data_Saver` function as below will collect 3 basic timi
 
 To add more timings, you simply pick more values from the `events` object.
 
-```
+```javascript
 function Data_Saver() {
     for (var b = MathJax.Extension.Profiler, c = b.events, d = 0, e = c.length; e > d; d++) {
         var f = c[d].n,
