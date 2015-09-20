@@ -64,7 +64,8 @@ var MathJax = {
     var EVENT = {
       FILES: {"MathJax.js":PROFILER.events[0]},
       HUB: {},
-      STARTUP: {}
+      STARTUP: {},
+      MATH: {}
     };
     //
     //  Hook into the Startup signal
@@ -143,22 +144,28 @@ var MathJax = {
       var name = (typeof(message) === "string" ? message : message[0]);
       var event = {n:message[0], T:TYPES.hub, t:TIME()}; // The new event
 
-      if (name === "New Math") {
+      if (name === "New Math" || name === "New Math Pending") {
         //
         //  For new math, the start time is the end time of the last event.
         //  We insert the math event earlier if it started font or file events
         //    so that the events come in oder of start times.
         //
-        event.T = TYPES.math;
+        event.T = TYPES.math; event.n = "New Math";
         event.s = lastEvent; event.e = event.t;
         event.i = message[1].replace(/MathJax-Element-/,"");
         delete event.t;
-        if (lastTop !== PROFILER.events.length) {
-          PROFILER.events.splice(lastTop,0,event);
+        if (EVENT.MATH[event.i]) {
+          delete EVENT.MATH[event.i];
           event = null;
+        } else {
+          if (name === "New Math Pending") EVENT.MATH[event.i] = true;
+          if (lastTop !== PROFILER.events.length) {
+            PROFILER.events.splice(lastTop,0,event);
+            event = null;
+          }
+          saveTop = true;
+          PROFILER.eqns++;
         }
-        saveTop = true;
-        PROFILER.eqns++;
 
       } else if (name.substr(0,5) === "Begin") {
         //
